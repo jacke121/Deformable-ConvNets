@@ -20,7 +20,7 @@ from config.config import config, update_config
 def parse_args():
     parser = argparse.ArgumentParser(description='Train R-FCN network')
     # general
-    parser.add_argument('--cfg', help='experiment configure file name', required=True, type=str)
+    parser.add_argument('--cfg', help='experiment configure file name', default=r"../experiments\rfcn\cfgs\resnet_v1_101_voc0712_rfcn_dcn_end2end_ohem.yaml", type=str)
 
     args, rest = parser.parse_known_args()
     # update config
@@ -161,8 +161,9 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
 
 def main():
-    print('Called with argument:', args)
-    ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
+    # print('Called with argument:', args)
+    # ctx = [mx.gpu(int(i)) for i in config.gpus.split(',')]
+    ctx = [mx.gpu(0)]
     train_net(args, ctx, config.network.pretrained, config.network.pretrained_epoch, config.TRAIN.model_prefix,
               config.TRAIN.begin_epoch, config.TRAIN.end_epoch, config.TRAIN.lr, config.TRAIN.lr_step)
 

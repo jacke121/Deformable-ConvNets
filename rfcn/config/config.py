@@ -43,8 +43,8 @@ config.dataset = edict()
 config.dataset.dataset = 'PascalVOC'
 config.dataset.image_set = '2007_trainval'
 config.dataset.test_image_set = '2007_test'
-config.dataset.root_path = './data'
-config.dataset.dataset_path = './data/VOCdevkit'
+config.dataset.root_path = r'C:\data\pascal_voc'
+config.dataset.dataset_path = r'C:\data\pascal_voc'
 config.dataset.NUM_CLASSES = 21
 
 

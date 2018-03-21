@@ -6,7 +6,7 @@
 # Modified by Yuwen Xiong
 # --------------------------------------------------------
 
-import cPickle
+import pickle
 import os
 import time
 import mxnet as mx
@@ -14,8 +14,8 @@ import numpy as np
 
 from module import MutableModule
 from utils import image
-from bbox.bbox_transform import bbox_pred, clip_boxes
-from nms.nms import py_nms_wrapper, cpu_nms_wrapper, gpu_nms_wrapper
+from b_box.bbox_transform import bbox_pred, clip_boxes
+from nmss.nms import py_nms_wrapper, cpu_nms_wrapper, gpu_nms_wrapper
 from utils.PrefetchingIter import PrefetchingIter
 
 
@@ -38,7 +38,7 @@ class Predictor(object):
 def im_proposal(predictor, data_batch, data_names, scales):
     output_all = predictor.predict(data_batch)
 
-    data_dict_all = [dict(zip(data_names, data_batch.data[i])) for i in xrange(len(data_batch.data))]
+    data_dict_all = [dict(zip(data_names, data_batch.data[i])) for i in range(len(data_batch.data))]
     scores_all = []
     boxes_all = []
 
@@ -110,12 +110,12 @@ def generate_proposals(predictor, test_data, imdb, cfg, vis=False, thresh=0.):
 
     rpn_file = os.path.join(rpn_folder, imdb.name + '_rpn.pkl')
     with open(rpn_file, 'wb') as f:
-        cPickle.dump(imdb_boxes, f, cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(imdb_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     if thresh > 0:
         full_rpn_file = os.path.join(rpn_folder, imdb.name + '_full_rpn.pkl')
         with open(full_rpn_file, 'wb') as f:
-            cPickle.dump(original_boxes, f, cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(original_boxes, f, pickle.HIGHEST_PROTOCOL)
 
     print 'wrote rpn proposals to {}'.format(rpn_file)
     return imdb_boxes
@@ -165,7 +165,7 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
     det_file = os.path.join(imdb.result_path, imdb.name + '_detections.pkl')
     if os.path.exists(det_file) and not ignore_cache:
         with open(det_file, 'rb') as fid:
-            all_boxes = cPickle.load(fid)
+            all_boxes = pickle.load(fid)
         info_str = imdb.evaluate_detections(all_boxes)
         if logger:
             logger.info('evaluate detections: \n{}'.format(info_str))
@@ -234,7 +234,7 @@ def pred_eval(predictor, test_data, imdb, cfg, vis=False, thresh=1e-3, logger=No
             logger.info('testing {}/{} data {:.4f}s net {:.4f}s post {:.4f}s'.format(idx, imdb.num_images, data_time / idx * test_data.batch_size, net_time / idx * test_data.batch_size, post_time / idx * test_data.batch_size))
 
     with open(det_file, 'wb') as f:
-        cPickle.dump(all_boxes, f, protocol=cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(all_boxes, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     info_str = imdb.evaluate_detections(all_boxes)
     if logger:

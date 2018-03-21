@@ -13,7 +13,7 @@ function. Results are written as the Pascal VOC format. Evaluation is based on m
 criterion.
 """
 
-import cPickle
+import pickle
 import cv2
 import os
 import numpy as np
@@ -50,7 +50,7 @@ class PascalVOC(IMDB):
         self.num_classes = len(self.classes)
         self.image_set_index = self.load_image_set_index()
         self.num_images = len(self.image_set_index)
-        print 'num_images', self.num_images
+        print('num_images', self.num_images)
         self.mask_size = mask_size
         self.binary_thresh = binary_thresh
 
@@ -91,13 +91,13 @@ class PascalVOC(IMDB):
         if not os.path.exists(cache_file):
             os.makedirs(cache_file)
         # instance level segmentation
-        gt_mask_file = os.path.join(cache_file, index + '.hkl')
+        gt_mask_file = os.path.join(cache_file, index + '.pickle')
         if not os.path.exists(gt_mask_file):
-            hkl.dump(gt_mask.astype('bool'), gt_mask_file, mode='w', compression='gzip')
+            pickle.dump(gt_mask.astype('bool'), gt_mask_file, mode='w', compression='gzip')
         # cache flip gt_masks
-        gt_mask_flip_file = os.path.join(cache_file, index + '_flip.hkl')
+        gt_mask_flip_file = os.path.join(cache_file, index + '_flip.pickle')
         if not os.path.exists(gt_mask_flip_file):
-            hkl.dump(gt_mask[:, :, ::-1].astype('bool'), gt_mask_flip_file, mode='w', compression='gzip')
+            pickle.dump(gt_mask[:, :, ::-1].astype('bool'), gt_mask_flip_file, mode='w', compression='gzip')
         return gt_mask_file
     def gt_roidb(self):
         """
@@ -107,14 +107,14 @@ class PascalVOC(IMDB):
         cache_file = os.path.join(self.cache_path, self.name + '_gt_roidb.pkl')
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                roidb = cPickle.load(fid)
-            print '{} gt roidb loaded from {}'.format(self.name, cache_file)
+                roidb = pickle.load(fid)
+            print('{} gt roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         gt_roidb = [self.load_pascal_annotation(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
-            cPickle.dump(gt_roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt roidb to {}'.format(cache_file)
+            pickle.dump(gt_roidb, fid, pickle.HIGHEST_PROTOCOL)
+        print('wrote gt roidb to {}'.format(cache_file))
 
         return gt_roidb
 
@@ -125,13 +125,13 @@ class PascalVOC(IMDB):
         cache_file = os.path.join(self.cache_path, self.name + '_gt_sdsdb.pkl')
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                sdsdb = cPickle.load(fid)
-            print '{} gt sdsdb loaded from {}'.format(self.name, cache_file)
+                sdsdb = pickle.load(fid)
+            print('{} gt sdsdb loaded from {}'.format(self.name, cache_file))
             return sdsdb
         # for internal useage
         gt_sdsdb = [self.load_pascal_sds_annotation(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
-            cPickle.dump(gt_sdsdb, fid, cPickle.HIGHEST_PROTOCOL)
+            pickle.dump(gt_sdsdb, fid, pickle.HIGHEST_PROTOCOL)
         # for future release usage
         # need to implement load sbd data
         return gt_sdsdb
@@ -218,24 +218,24 @@ class PascalVOC(IMDB):
         cache_file = os.path.join(self.cache_path, self.name + '_ss_roidb.pkl')
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                roidb = cPickle.load(fid)
-            print '{} ss roidb loaded from {}'.format(self.name, cache_file)
+                roidb = pickle.load(fid)
+            print('{} ss roidb loaded from {}'.format(self.name, cache_file))
             return roidb
 
         if append_gt:
-            print 'appending ground truth annotations'
+            print('appending ground truth annotations')
             ss_roidb = self.load_selective_search_roidb(gt_roidb)
             roidb = IMDB.merge_roidbs(gt_roidb, ss_roidb)
         else:
             roidb = self.load_selective_search_roidb(gt_roidb)
         with open(cache_file, 'wb') as fid:
-            cPickle.dump(roidb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote ss roidb to {}'.format(cache_file)
+            pickle.dump(roidb, fid, pickle.HIGHEST_PROTOCOL)
+        print('wrote ss roidb to {}'.format(cache_file))
 
         return roidb
 
     def load_pascal_sds_annotation(self, index):
-        print index
+        print(index)
         sds_rec = dict()
         sds_rec['image'] = self.image_path_from_index(index)
         size = cv2.imread(sds_rec['image']).shape
@@ -337,22 +337,22 @@ class PascalVOC(IMDB):
         for cls_inds, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print 'Writing {} VOC results file'.format(cls)
+            print('Writing {} VOC results file'.format(cls))
             filename = os.path.join(result_dir, cls + '_det.pkl')
-            print filename
+            print(filename)
             with open(filename, 'wb') as f:
-                cPickle.dump(all_boxes[cls_inds], f, cPickle.HIGHEST_PROTOCOL)
+                pickle.dump(all_boxes[cls_inds], f, pickle.HIGHEST_PROTOCOL)
             filename = os.path.join(result_dir, cls + '_seg.pkl')
             with open(filename, 'wb') as f:
-                cPickle.dump(all_masks[cls_inds], f, cPickle.HIGHEST_PROTOCOL)
+                pickle.dump(all_masks[cls_inds], f, pickle.HIGHEST_PROTOCOL)
 
     def _reformat_result(self, boxes, masks):
         num_images = self.num_images
         num_class = len(self.classes)
-        reformat_masks = [[[] for _ in xrange(num_images)]
-                          for _ in xrange(num_class)]
-        for cls_inds in xrange(1, num_class):
-            for img_inds in xrange(num_images):
+        reformat_masks = [[[] for _ in range(num_images)]
+                          for _ in range(num_class)]
+        for cls_inds in range(1, num_class):
+            for img_inds in range(num_images):
                 if len(masks[cls_inds][img_inds]) == 0:
                     continue
                 num_inst = masks[cls_inds][img_inds].shape[0]
@@ -373,12 +373,12 @@ class PascalVOC(IMDB):
         aps = []
         # define this as true according to SDS's evaluation protocol
         use_07_metric = True
-        print 'VOC07 metric? ' + ('Yes' if use_07_metric else 'No')
+        print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
         info_str += 'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
         info_str += '\n'
         if not os.path.isdir(output_dir):
             os.mkdir(output_dir)
-        print '~~~~~~ Evaluation use min overlap = 0.5 ~~~~~~'
+        print('~~~~~~ Evaluation use min overlap = 0.5 ~~~~~~')
         info_str += '~~~~~~ Evaluation use min overlap = 0.5 ~~~~~~'
         info_str += '\n'
         for i, cls in enumerate(self.classes):
@@ -393,7 +393,7 @@ class PascalVOC(IMDB):
             info_str += 'AP for {} = {:.2f}\n'.format(cls, ap*100)
         print('Mean AP@0.5 = {:.2f}'.format(np.mean(aps)*100))
         info_str += 'Mean AP@0.5 = {:.2f}\n'.format(np.mean(aps)*100)
-        print '~~~~~~ Evaluation use min overlap = 0.7 ~~~~~~'
+        print('~~~~~~ Evaluation use min overlap = 0.7 ~~~~~~')
         info_str += '~~~~~~ Evaluation use min overlap = 0.7 ~~~~~~\n'
         aps = []
         for i, cls in enumerate(self.classes):
@@ -432,7 +432,7 @@ class PascalVOC(IMDB):
         for cls_ind, cls in enumerate(self.classes):
             if cls == '__background__':
                 continue
-            print 'Writing {} VOC results file'.format(cls)
+            print('Writing {} VOC results file'.format(cls))
             filename = self.get_result_file_template().format(cls)
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.image_set_index):
@@ -457,7 +457,7 @@ class PascalVOC(IMDB):
         aps = []
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if self.year == 'SDS' or int(self.year) < 2010 else False
-        print 'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
+        print('VOC07 metric? ' + ('Y' if use_07_metric else 'No'))
         info_str += 'VOC07 metric? ' + ('Y' if use_07_metric else 'No')
         info_str += '\n'
         for cls_ind, cls in enumerate(self.classes):

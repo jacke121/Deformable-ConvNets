@@ -6,7 +6,7 @@ function. Results are written as the Pascal VOC format. Evaluation is based on m
 criterion.
 """
 
-import cPickle
+import pickle
 import os
 import cv2
 import numpy as np
@@ -41,7 +41,7 @@ class PascalVOC_Segmentation(IMDB):
         self.num_classes = len(self.classes)
         self.image_set_index = self.load_image_set_index()
         self.num_images = len(self.image_set_index)
-        print 'num_images', self.num_images
+        print('num_images', self.num_images)
 
         self.config = {'comp_id': 'comp4',
                        'use_diff': False,
@@ -86,14 +86,14 @@ class PascalVOC_Segmentation(IMDB):
         cache_file = os.path.join(self.cache_path, self.name + '_gt_segdb.pkl')
         if os.path.exists(cache_file):
             with open(cache_file, 'rb') as fid:
-                segdb = cPickle.load(fid)
-            print '{} gt segdb loaded from {}'.format(self.name, cache_file)
+                segdb = pickle.load(fid)
+            print('{} gt segdb loaded from {}'.format(self.name, cache_file))
             return segdb
 
         gt_segdb = [self.load_pascal_annotation(index) for index in self.image_set_index]
         with open(cache_file, 'wb') as fid:
-            cPickle.dump(gt_segdb, fid, cPickle.HIGHEST_PROTOCOL)
-        print 'wrote gt segdb to {}'.format(cache_file)
+            pickle.dump(gt_segdb, fid, pickle.HIGHEST_PROTOCOL)
+        print('wrote gt segdb to {}'.format(cache_file))
 
         return gt_segdb
 
@@ -123,7 +123,7 @@ class PascalVOC_Segmentation(IMDB):
         """
         n = num_cls
         pallete = [0]*(n*3)
-        for j in xrange(0,n):
+        for j in range(0,n):
                 lab = j
                 pallete[j*3+0] = 0
                 pallete[j*3+1] = 0
